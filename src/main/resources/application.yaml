@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: avaliacoes-ms
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: kofood
+    password: kofood
+
+    listener:
+      simple:
+        retry:
+          enabled: true
+          maxAttempts: 4
+          initialInterval: 5000 # 5s
+          multiplier: 2
+          maxInterval: 60000 # 1min
