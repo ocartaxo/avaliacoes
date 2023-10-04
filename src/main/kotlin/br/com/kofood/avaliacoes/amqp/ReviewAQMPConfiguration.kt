@@ -32,13 +32,24 @@ class ReviewAQMPConfiguration {
     @Bean
     fun reviewDetailsQueue(): Queue = QueueBuilder
         .nonDurable(PAYMENTS_REVIEW_DETAILS_QUEUE)
+        .deadLetterExchange(PAYMENTS_DLX)
         .build()
+
+    @Bean
+    fun reviewsDetailsDQL(): Queue = QueueBuilder
+        .nonDurable(PAYMENTS_REVIEW_DETAILS_DQL)
+        .build()
+
 
     @Bean
     fun fanoutExchange(): FanoutExchange = ExchangeBuilder
         .fanoutExchange(PAYMENTS_EXCHANGE)
         .build()
 
+    @Bean
+    fun deadLetterExchange(): FanoutExchange = ExchangeBuilder
+        .fanoutExchange(PAYMENTS_DLX)
+        .build()
 
     @Bean
     fun bindPaymentsOrder(): Binding = BindingBuilder
@@ -47,8 +58,13 @@ class ReviewAQMPConfiguration {
 
 
     @Bean
-    fun rabbitAdmin(cf: ConnectionFactory) = RabbitAdmin(cf)
+    fun bindDLXPaymentsOrder(): Binding = BindingBuilder
+        .bind(reviewsDetailsDQL())
+        .to(deadLetterExchange())
 
+
+    @Bean
+    fun rabbitAdmin(cf: ConnectionFactory) = RabbitAdmin(cf)
 
     @Bean
     fun startRabbitAdmin(rabbitAdmin: RabbitAdmin) =
@@ -56,6 +72,9 @@ class ReviewAQMPConfiguration {
 
     companion object {
         const val PAYMENTS_REVIEW_DETAILS_QUEUE = "payments.review-details"
+        const val PAYMENTS_REVIEW_DETAILS_DQL = "payments.review-details-dql"
+
         const val PAYMENTS_EXCHANGE = "payments.exchange"
+        const val PAYMENTS_DLX = "payments.dlx"
     }
 }
